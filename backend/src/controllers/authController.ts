@@ -9,12 +9,13 @@ export const authController = {
       const { email, password } = req.body;
       const { token, user } = await AuthService.login(email, password);
       
-      await AuditService.createLog({
+      // Non-blocking audit log
+      AuditService.createLog({
         userId: (user as any)._id || (user as any).id,
         action: 'LOGIN',
-        entityType: 'User',
+        entityType: 'auth',
         ipAddress: req.ip
-      });
+      }).catch(() => {});
       
       return ApiResponse.success(res, { token, user }, 'Login successful');
     } catch (error: any) {
