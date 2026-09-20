@@ -1,29 +1,30 @@
 # AI-Based Budget Utilization Monitoring System
 
-A comprehensive full-stack web application for monitoring government department budget allocations, tracking expenditures, detecting anomalies through rule-based analysis, and generating financial reports.
+A comprehensive full-stack web application for monitoring government department budget allocations, tracking expenditures, detecting anomalies through rule-based analysis, and generating financial reports. Built with a clean, modern light-themed UI inspired by contemporary fintech design.
 
 ## Table of Contents
 
 1. [Project Overview](#project-overview)
 2. [Technology Stack](#technology-stack)
-3. [Features](#features)
-4. [System Architecture](#system-architecture)
-5. [Prerequisites](#prerequisites)
-6. [Installation](#installation)
-7. [Configuration](#configuration)
-8. [Database Seeding](#database-seeding)
-9. [Running the Application](#running-the-application)
-10. [Demo Credentials](#demo-credentials)
-11. [User Roles & Permissions](#user-roles--permissions)
-12. [API Endpoints](#api-endpoints)
-13. [Project Structure](#project-structure)
-14. [Data Models](#data-models)
-15. [Monitoring & Anomaly Detection](#monitoring--anomaly-detection)
-16. [Reports](#reports)
-17. [Testing](#testing)
-18. [Seed Data Overview](#seed-data-overview)
-19. [Environment Variables](#environment-variables)
-20. [Troubleshooting](#troubleshooting)
+3. [UI/UX Design](#uiux-design)
+4. [Features](#features)
+5. [System Architecture](#system-architecture)
+6. [Prerequisites](#prerequisites)
+7. [Installation](#installation)
+8. [Configuration](#configuration)
+9. [Database Seeding](#database-seeding)
+10. [Running the Application](#running-the-application)
+11. [Demo Credentials](#demo-credentials)
+12. [User Roles & Permissions](#user-roles--permissions)
+13. [API Endpoints](#api-endpoints)
+14. [Project Structure](#project-structure)
+15. [Data Models](#data-models)
+16. [Monitoring & Anomaly Detection](#monitoring--anomaly-detection)
+17. [Reports](#reports)
+18. [Testing](#testing)
+19. [Seed Data Overview](#seed-data-overview)
+20. [Environment Variables](#environment-variables)
+21. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -47,6 +48,40 @@ This system allows government organizations to:
 | **Database** | MongoDB with Mongoose ODM |
 | **Authentication** | JWT (JSON Web Tokens) |
 | **Testing** | Jest |
+| **UI Font** | Inter (Google Fonts) |
+
+## UI/UX Design
+
+The application follows a **light & bright modern fintech design system** with a clean, professional appearance.
+
+### Design System
+
+| Element | Value |
+|---------|-------|
+| **Primary Color** | Indigo `#4f46e5` |
+| **Primary Light** | `#6366f1` |
+| **Primary Dark** | `#4338ca` |
+| **Background** | Slate-50 `#f8fafc` |
+| **Surface/Cards** | White `#ffffff` |
+| **Text Primary** | Slate-900 `#0f172a` |
+| **Text Secondary** | Slate-500 `#64748b` |
+| **Border** | Slate-200 `#e2e8f0` |
+| **Success** | Emerald `#10b981` |
+| **Danger** | Red `#ef4444` |
+| **Warning** | Amber `#f59e0b` |
+| **Font Family** | Inter, Plus Jakarta Sans, system fonts |
+| **Card Radius** | 16px (general), 24px (login) |
+
+### Design Highlights
+
+- **Login Page**: Light gradient background with ambient pastel orbs (indigo, sky, violet blurs), centered white card with soft shadow, custom SVG icons, indigo gradient submit button
+- **Layout**: White sidebar (260px) with indigo-highlighted active links, white top header bar with subtle bottom border
+- **Dashboard**: KPI cards with clean borders, Chart.js visualizations with the indigo color palette
+- **Tables**: Clean borders, rounded corners, hover states
+- **Forms**: Rounded input fields with indigo focus rings
+- **Buttons**: Rounded (12px radius) with indigo gradient primary actions
+
+> The design uses CSS custom properties (`--color-primary`, `--color-bg`, etc.) defined in `styles.css` for easy theming.
 
 ## Features
 
@@ -102,6 +137,10 @@ This system allows government organizations to:
 └──────────────────┘     └──────────────────┘     └──────────────────┘
 ```
 
+- **Frontend → Backend**: Angular proxy (`proxy.conf.json`) forwards `/api/*` requests to Express
+- **Backend → Database**: Mongoose ODM with connection retry logic
+- **Authentication**: JWT tokens issued on login, verified via middleware on protected routes
+
 ## Prerequisites
 
 - **Node.js** >= 18.x
@@ -155,10 +194,10 @@ npm run seed
 This creates:
 - 6 departments (Indian government structure)
 - 8 users (1 admin, 2 finance officers, 5 department heads)
-- 12 budgets across 2 financial years
-- 40+ expenditure records
-- 6 threshold rules
-- 5 alerts with varying severities
+- 12 budgets across 2 financial years (FY 2025-26 and FY 2024-25)
+- 60+ expenditure records with realistic amounts
+- 6 threshold rules (overspending, under-utilization, spending spikes)
+- 5 alerts with varying severities and statuses
 - 5 audit log entries
 
 ## Running the Application
@@ -193,19 +232,22 @@ npm start
 cd frontend
 npx ng build --configuration production
 ```
+Output is generated in `frontend/dist/frontend/browser/`
 
 ## Demo Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| **Admin** | admin@budgetmonitor.gov.in | Password123! |
-| **Finance Officer** | finance1@budgetmonitor.gov.in | Password123! |
-| **Finance Officer** | finance2@budgetmonitor.gov.in | Password123! |
-| **Dept Head (Public Works)** | head.publicworks@budgetmonitor.gov.in | Password123! |
-| **Dept Head (Education)** | head.education@budgetmonitor.gov.in | Password123! |
-| **Dept Head (Health)** | head.health@budgetmonitor.gov.in | Password123! |
-| **Dept Head (Transport)** | head.transport@budgetmonitor.gov.in | Password123! |
-| **Dept Head (Water & Sanitation)** | head.water@budgetmonitor.gov.in | Password123! |
+All accounts use the password: **`Password123!`**
+
+| Role | Email | Department |
+|------|-------|------------|
+| **Admin** | admin@budgetmonitor.gov.in | All |
+| **Finance Officer** | finance1@budgetmonitor.gov.in | All |
+| **Finance Officer** | finance2@budgetmonitor.gov.in | All |
+| **Department Head** | head.publicworks@budgetmonitor.gov.in | Public Works |
+| **Department Head** | head.education@budgetmonitor.gov.in | Education |
+| **Department Head** | head.health@budgetmonitor.gov.in | Health |
+| **Department Head** | head.transport@budgetmonitor.gov.in | Transport |
+| **Department Head** | head.water@budgetmonitor.gov.in | Water & Sanitation |
 
 ## User Roles & Permissions
 
@@ -307,13 +349,13 @@ Al-Based Budget Utilization/
 ├── backend/
 │   ├── src/
 │   │   ├── config/          # Database & environment config
-│   │   ├── controllers/     # Route handlers
+│   │   ├── controllers/     # Route handlers (10 files)
 │   │   ├── middleware/       # Auth, authorization, validation, error handling
-│   │   ├── models/           # Mongoose schemas (User, Department, Budget, etc.)
-│   │   ├── routes/           # Express route definitions
-│   │   ├── seed/             # Database seeding script
-│   │   ├── services/         # Business logic layer
-│   │   ├── tests/            # Jest unit tests
+│   │   ├── models/           # Mongoose schemas (7 models + index)
+│   │   ├── routes/           # Express route definitions (11 files)
+│   │   ├── seed/             # Database seeding script with realistic data
+│   │   ├── services/         # Business logic layer (9 services)
+│   │   ├── tests/            # Jest unit tests (28 tests)
 │   │   ├── types/            # TypeScript type declarations
 │   │   ├── utils/            # API response helpers, calculations
 │   │   └── validators/       # Express-validator validation chains
@@ -322,23 +364,23 @@ Al-Based Budget Utilization/
 ├── frontend/
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── admin/        # Admin panel component
-│   │   │   ├── alerts/       # Alert list component
-│   │   │   ├── audit/        # Audit log viewer component
-│   │   │   ├── auth/         # Login & unauthorized components
+│   │   │   ├── admin/        # Admin panel (users, departments, rules)
+│   │   │   ├── alerts/       # Alert list with status management
+│   │   │   ├── audit/        # Audit log viewer with filters
+│   │   │   ├── auth/         # Login (custom light design) & unauthorized
 │   │   │   ├── budgets/      # Budget list, form, detail components
-│   │   │   ├── core/         # Layout component (sidebar + header)
-│   │   │   ├── dashboard/    # Dashboard with charts
-│   │   │   ├── expenditures/ # Expenditure list & form components
+│   │   │   ├── core/         # Layout (white sidebar + header)
+│   │   │   ├── dashboard/    # Dashboard with KPI cards & charts
+│   │   │   ├── expenditures/ # Expenditure list & form
 │   │   │   ├── guards/       # Auth & role route guards
-│   │   │   ├── interceptors/ # HTTP auth interceptor
+│   │   │   ├── interceptors/ # HTTP auth interceptor (JWT)
 │   │   │   ├── models/       # TypeScript interfaces
-│   │   │   ├── monitoring/   # Monitoring & analytics component
-│   │   │   ├── reports/      # Reports with export
-│   │   │   └── services/     # Angular HTTP services
-│   │   └── styles.css        # Global styles
+│   │   │   ├── monitoring/   # Monitoring & analytics
+│   │   │   ├── reports/      # Reports with CSV/PDF export
+│   │   │   └── services/     # Angular HTTP services (11 services)
+│   │   └── styles.css        # Global styles with design system variables
 │   ├── angular.json
-│   ├── proxy.conf.json
+│   ├── proxy.conf.json       # API proxy config (→ localhost:3000)
 │   └── package.json
 ├── .env.example
 ├── .gitignore
@@ -419,8 +461,8 @@ Public Works, Education, Health, Transport, Water & Sanitation, Rural Developmen
 ### Budget Scenarios
 - Normal utilization (40-50%)
 - Near-limit utilization (65%)
-- Over-budget (107% - Health Department)
-- Under-utilized (15% - Teacher Training)
+- Over-budget (107% - Health Department, Primary Healthcare Centers)
+- Under-utilized (15% - Teacher Training Initiative)
 
 ## Environment Variables
 
@@ -461,6 +503,15 @@ netstat -ano | findstr :3000
 taskkill /PID <PID> /F
 ```
 
+### Login Issues
+If login fails, verify the backend is running and the seed data is loaded:
+```bash
+cd backend
+npm run seed   # Re-seed the database
+npm run dev    # Restart backend
+```
+Then hard-refresh the browser (`Ctrl+Shift+R`) and try again with `admin@budgetmonitor.gov.in` / `Password123!`
+
 ---
 
-**Developed as an internship project demonstrating full-stack MEAN application development with financial monitoring capabilities.**
+**Developed as an internship project demonstrating full-stack MEAN application development with financial monitoring capabilities and modern UI design.**
