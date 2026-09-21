@@ -110,27 +110,31 @@ import { AuthService } from '../../services/auth.service';
           
           <span class="spacer"></span>
           
-          <div class="user-info" *ngIf="user">
-            <div class="user-details">
-              <span class="user-name">{{ user.name || user.email }}</span>
-              <span class="role-badge" [ngClass]="user.role">{{ getFormattedRole(user.role) }}</span>
+          <div class="officer-profile-card" [matMenuTriggerFor]="userMenu" *ngIf="user" matTooltip="Officer Profile & Settings">
+            <div class="officer-avatar-badge">
+              {{ (user.name ? user.name.charAt(0) : 'A') | uppercase }}
             </div>
-            
-            <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-btn" matTooltip="User Profile">
-              <mat-icon>account_circle</mat-icon>
-            </button>
-            <mat-menu #userMenu="matMenu">
-              <div class="menu-user-header" style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0;">
-                <div style="font-weight: 600; font-size: 14px;">{{ user.name }}</div>
-                <div style="font-size: 12px; color: #64748b;">{{ user.email }}</div>
-                <div style="font-size: 11px; color: #1e3a8a; font-weight: 600; margin-top: 4px;">{{ getFormattedRole(user.role) }}</div>
-              </div>
-              <button mat-menu-item (click)="logout()">
-                <mat-icon color="warn">exit_to_app</mat-icon>
-                <span>Log Out</span>
-              </button>
-            </mat-menu>
+            <div class="officer-identity">
+              <span class="officer-fullname">{{ user.name || user.email }}</span>
+              <span class="officer-role-tag" [ngClass]="user.role">
+                <span class="status-indicator-dot"></span>
+                {{ getFormattedRole(user.role) }}
+              </span>
+            </div>
+            <mat-icon class="dropdown-chevron">expand_more</mat-icon>
           </div>
+
+          <mat-menu #userMenu="matMenu" xPosition="before">
+            <div class="menu-user-header" style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; min-width: 200px;">
+              <div style="font-weight: 600; font-size: 13px; color: #0f172a;">{{ user.name }}</div>
+              <div style="font-size: 12px; color: #64748b;">{{ user.email }}</div>
+              <div style="font-size: 11px; color: #1e3a8a; font-weight: 600; margin-top: 4px;">{{ getFormattedRole(user.role) }}</div>
+            </div>
+            <button mat-menu-item (click)="logout()">
+              <mat-icon color="warn">exit_to_app</mat-icon>
+              <span>Log Out</span>
+            </button>
+          </mat-menu>
         </mat-toolbar>
 
         <div class="main-content">
@@ -371,9 +375,13 @@ import { AuthService } from '../../services/auth.service';
     .toolbar {
       background-color: #ffffff;
       color: #0f172a;
-      height: 60px;
+      height: 64px !important;
+      min-height: 64px !important;
       border-bottom: 1px solid #e2e8f0;
-      padding: 0 16px;
+      padding: 0 20px !important;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
     }
     
     .menu-btn {
@@ -384,10 +392,11 @@ import { AuthService } from '../../services/auth.service';
     .portal-main-heading {
       display: flex;
       flex-direction: column;
+      justify-content: center;
     }
 
     .portal-title {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
       color: #1e293b;
       line-height: 1.2;
@@ -397,60 +406,109 @@ import { AuthService } from '../../services/auth.service';
       font-size: 11px;
       color: #64748b;
       font-weight: 400;
+      margin-top: 1px;
     }
 
     .spacer {
       flex: 1 1 auto;
     }
 
-    .user-info {
+    .officer-profile-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 12px 4px 6px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      user-select: none;
+      height: 42px;
+      box-sizing: border-box;
+    }
+
+    .officer-profile-card:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .officer-avatar-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 13px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
     }
 
-    .user-details {
+    .officer-identity {
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      justify-content: center;
+      line-height: 1.15;
+      text-align: left;
     }
 
-    .user-name {
-      font-size: 13px;
+    .officer-fullname {
+      font-size: 12.5px;
       font-weight: 600;
-      color: #1e293b;
+      color: #0f172a;
+      white-space: nowrap;
     }
 
-    .role-badge {
+    .officer-role-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       font-size: 10px;
       font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
+      letter-spacing: 0.3px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 2px;
+      white-space: nowrap;
+      margin-top: 1px;
     }
 
-    .role-badge.admin {
-      background-color: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fca5a5;
+    .status-indicator-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      display: inline-block;
     }
 
-    .role-badge.finance_officer {
-      background-color: #dbeafe;
-      color: #1e40af;
-      border: 1px solid #bfdbfe;
+    .officer-role-tag.admin {
+      color: #dc2626;
+    }
+    .officer-role-tag.admin .status-indicator-dot {
+      background-color: #dc2626;
     }
 
-    .role-badge.department_head {
-      background-color: #fef3c7;
-      color: #92400e;
-      border: 1px solid #fde68a;
+    .officer-role-tag.finance_officer {
+      color: #2563eb;
+    }
+    .officer-role-tag.finance_officer .status-indicator-dot {
+      background-color: #2563eb;
     }
 
-    .user-btn {
-      color: #1e3a8a;
+    .officer-role-tag.department_head {
+      color: #d97706;
+    }
+    .officer-role-tag.department_head .status-indicator-dot {
+      background-color: #d97706;
+    }
+
+    .dropdown-chevron {
+      color: #64748b;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
 
     .main-content {

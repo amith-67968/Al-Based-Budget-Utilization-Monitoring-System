@@ -193,24 +193,34 @@ import { AuthService } from '../services/auth.service';
     }
     .kpi-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
     .kpi-card {
-      padding: 16px;
+      padding: 16px 14px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      border-radius: 12px;
+      overflow: hidden;
     }
     .kpi-label {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 8px;
+      font-size: 11px;
+      color: #64748b;
+      margin-bottom: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .kpi-value {
-      font-size: 24px;
-      font-weight: 500;
+      font-size: clamp(16px, 1.2vw, 20px);
+      font-weight: 700;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
     .kpi-good { border-left: 4px solid #4caf50; }
     .kpi-warning { border-left: 4px solid #ff9800; }
