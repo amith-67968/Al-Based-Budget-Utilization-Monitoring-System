@@ -87,7 +87,7 @@ interface AuditLog {
           <ng-container matColumnDef="timestamp">
             <th mat-header-cell *matHeaderCellDef> Timestamp </th>
             <td mat-cell *matCellDef="let element" class="mono-text"> 
-              {{element.timestamp | date:'MMM dd, yyyy HH:mm:ss'}} 
+              {{(element.createdAt || element.timestamp) | date:'MMM dd, yyyy HH:mm:ss'}} 
             </td>
           </ng-container>
 
@@ -96,7 +96,7 @@ interface AuditLog {
             <td mat-cell *matCellDef="let element"> 
               <div class="user-info">
                 <mat-icon class="small-icon">person</mat-icon>
-                {{element.userId?.name || 'System'}}
+                {{element.userId?.name || 'System / Auto'}}
               </div>
             </td>
           </ng-container>
@@ -117,7 +117,7 @@ interface AuditLog {
 
           <ng-container matColumnDef="entityId">
             <th mat-header-cell *matHeaderCellDef> Entity ID </th>
-            <td mat-cell *matCellDef="let element" class="mono-text text-muted"> {{element.entityId}} </td>
+            <td mat-cell *matCellDef="let element" class="mono-text text-muted"> {{element.entityId || 'N/A'}} </td>
           </ng-container>
           
           <ng-container matColumnDef="expand">
@@ -135,8 +135,8 @@ interface AuditLog {
             <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length">
               <div class="example-element-detail" [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'">
                 <div class="detail-container">
-                  <div class="detail-header">Change Payload Details</div>
-                  <pre class="json-preview">{{element.details | json}}</pre>
+                  <div class="detail-header">Audit Details (Client IP: {{element.ipAddress || 'Internal API'}})</div>
+                  <pre class="json-preview">{{ (element.details || { previousValue: element.previousValue, newValue: element.newValue, ipAddress: element.ipAddress }) | json }}</pre>
                 </div>
               </div>
             </td>
@@ -281,35 +281,17 @@ export class AuditComponent implements OnInit {
   }
 
   loadLogs() {
-    // Simulated API Call
-    this.logs = [
-      { 
-        _id: '1', 
-        userId: { name: 'Alice Smith' }, 
-        action: 'UPDATE', 
-        entityType: 'budget', 
-        entityId: 'b-2024-eng', 
-        timestamp: new Date().toISOString(),
-        details: { oldAmount: 400000, newAmount: 500000, reason: 'Q3 adjustment' }
+    const params: any = { limit: 100 };
+    if (this.filters.entityType) params.entityType = this.filters.entityType;
+    if (this.filters.action) params.action = this.filters.action;
+
+    this.http.get<any>('/api/audit-logs', { params }).subscribe({
+      next: (res) => {
+        this.logs = res.data || res || [];
       },
-      { 
-        _id: '2', 
-        userId: { name: 'System' }, 
-        action: 'CREATE', 
-        entityType: 'alert', 
-        entityId: 'al-998', 
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        details: { severity: 'HIGH', threshold: '90%', current: '92%' }
-      },
-      { 
-        _id: '3', 
-        userId: { name: 'Bob Jones' }, 
-        action: 'LOGIN', 
-        entityType: 'auth', 
-        entityId: 'session-xyz', 
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
-        details: { ip: '192.168.1.5', browser: 'Chrome' }
+      error: () => {
+        this.logs = [];
       }
-    ];
+    });
   }
 }

@@ -6,7 +6,8 @@ export const monitoringController = {
   getOverview: async (req: Request, res: Response) => {
     try {
       const departmentId = req.query.departmentId as string | undefined;
-      const overview = await MonitoringService.getOverview(departmentId);
+      const financialYear = req.query.financialYear as string | undefined;
+      const overview = await MonitoringService.getOverview(departmentId, financialYear);
       return ApiResponse.success(res, overview, 'Monitoring overview retrieved');
     } catch (error: any) {
       return ApiResponse.error(res, error.message, 400);

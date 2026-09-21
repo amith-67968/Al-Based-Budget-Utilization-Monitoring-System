@@ -110,9 +110,9 @@ interface ThresholdRule {
                     <mat-form-field appearance="outline">
                       <mat-label>Role</mat-label>
                       <mat-select [(ngModel)]="editingUser.role" required>
-                        <mat-option value="ADMIN">Admin</mat-option>
-                        <mat-option value="MANAGER">Manager</mat-option>
-                        <mat-option value="VIEWER">Viewer</mat-option>
+                        <mat-option value="admin">Admin</mat-option>
+                        <mat-option value="finance_officer">Finance Officer</mat-option>
+                        <mat-option value="department_head">Department Head</mat-option>
                       </mat-select>
                     </mat-form-field>
                     <mat-form-field appearance="outline">
@@ -278,9 +278,11 @@ interface ThresholdRule {
                     <mat-form-field appearance="outline">
                       <mat-label>Rule Type</mat-label>
                       <mat-select [(ngModel)]="editingRule.ruleType" required>
-                        <mat-option value="BUDGET_WARNING">Budget Warning %</mat-option>
-                        <mat-option value="BUDGET_CRITICAL">Budget Critical %</mat-option>
-                        <mat-option value="MAX_TRANSACTION">Max Transaction Limit</mat-option>
+                        <mat-option value="OVERSPENDING">Overspending %</mat-option>
+                        <mat-option value="UNDER_UTILIZATION">Under-utilization %</mat-option>
+                        <mat-option value="SPENDING_SPIKE">Spending Spike %</mat-option>
+                        <mat-option value="MAX_UTILIZATION">Max Utilization %</mat-option>
+                        <mat-option value="EXPENDITURE_LIMIT">Single Expenditure Limit (₹)</mat-option>
                       </mat-select>
                     </mat-form-field>
                     <mat-form-field appearance="outline">
@@ -469,37 +471,37 @@ export class AdminComponent implements OnInit {
   showDeptForm = false;
   showRuleForm = false;
 
-  editingUser: Partial<User> = {};
-  editingDept: Partial<Department> = {};
-  editingRule: Partial<ThresholdRule> = {};
+  editingUser: any = {};
+  editingDept: any = {};
+  editingRule: any = {};
 
   ngOnInit() {
     this.loadData();
   }
 
   loadData() {
-    // Simulated API calls for demonstration
-    this.users = [
-      { _id: 'u1', name: 'Alice Smith', email: 'alice@company.com', role: 'ADMIN', status: 'ACTIVE' },
-      { _id: 'u2', name: 'Bob Jones', email: 'bob@company.com', role: 'MANAGER', departmentId: { _id: 'd1', name: 'Engineering' }, status: 'ACTIVE' }
-    ];
-    this.departments = [
-      { _id: 'd1', name: 'Engineering', description: 'Software Development', headUserName: 'Bob Jones', status: 'ACTIVE' }
-    ];
-    this.rules = [
-      { _id: 'r1', ruleType: 'BUDGET_WARNING', value: 80, enabled: true, description: 'Warn when budget hits 80%' },
-      { _id: 'r2', ruleType: 'MAX_TRANSACTION', value: 50000, enabled: false, description: 'Require approval over 50k' }
-    ];
+    this.http.get<any>('/api/users').subscribe({
+      next: (res) => this.users = res.data || res || [],
+      error: () => this.snackBar.open('Failed to load users', 'Close', { duration: 3000 })
+    });
+    this.http.get<any>('/api/departments').subscribe({
+      next: (res) => this.departments = res.data || res || [],
+      error: () => this.snackBar.open('Failed to load departments', 'Close', { duration: 3000 })
+    });
+    this.http.get<any>('/api/admin/rules').subscribe({
+      next: (res) => this.rules = res.data || res || [],
+      error: () => this.snackBar.open('Failed to load rules', 'Close', { duration: 3000 })
+    });
   }
 
   // User Management
   showCreateUserDialog() {
-    this.editingUser = { status: 'ACTIVE', role: 'VIEWER' };
+    this.editingUser = { status: 'active', role: 'department_head' };
     this.showUserForm = true;
   }
 
   editUser(user: User) {
-    this.editingUser = { ...user };
+    this.editingUser = { ...user, departmentId: user.departmentId?._id || user.departmentId };
     this.showUserForm = true;
   }
 
@@ -509,33 +511,54 @@ export class AdminComponent implements OnInit {
   }
 
   saveUser() {
-    if (!this.editingUser.name || !this.editingUser.email) return;
-    // Simulate API call
-    if (this.editingUser._id) {
-      const idx = this.users.findIndex(u => u._id === this.editingUser._id);
-      if (idx > -1) this.users[idx] = this.editingUser as User;
-      this.snackBar.open('User updated successfully', 'Close', { duration: 3000 });
-    } else {
-      this.editingUser._id = 'u' + Date.now();
-      this.users = [...this.users, this.editingUser as User];
-      this.snackBar.open('User created successfully', 'Close', { duration: 3000 });
+    if (!this.editingUser.name || !this.editingUser.email) {
+      this.snackBar.open('Please fill name and email', 'Close', { duration: 3000 });
+      return;
     }
-    this.cancelUserForm();
+    
+    if (this.editingUser._id) {
+      this.http.put<any>(`/api/users/${this.editingUser._id}`, this.editingUser).subscribe({
+        next: () => {
+          this.snackBar.open('User updated successfully', 'Close', { duration: 3000 });
+          this.cancelUserForm();
+          this.loadData();
+        },
+        error: (err) => this.snackBar.open(err.error?.message || 'Failed to update user', 'Close', { duration: 3000 })
+      });
+    } else {
+      if (!this.editingUser.password) {
+        this.editingUser.password = 'Password123!';
+      }
+      this.http.post<any>('/api/users', this.editingUser).subscribe({
+        next: () => {
+          this.snackBar.open('User created successfully', 'Close', { duration: 3000 });
+          this.cancelUserForm();
+          this.loadData();
+        },
+        error: (err) => this.snackBar.open(err.error?.message || 'Failed to create user', 'Close', { duration: 3000 })
+      });
+    }
   }
 
-  toggleUserStatus(user: User) {
-    user.status = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    this.snackBar.open(`User ${user.status.toLowerCase()}`, 'Close', { duration: 3000 });
+  toggleUserStatus(user: any) {
+    const newStatus = (user.status === 'active' || user.status === 'ACTIVE') ? 'inactive' : 'active';
+    this.http.patch<any>(`/api/users/${user._id}/status`, { status: newStatus }).subscribe({
+      next: () => {
+        user.status = newStatus;
+        this.snackBar.open(`User is now ${newStatus}`, 'Close', { duration: 3000 });
+      },
+      error: () => this.snackBar.open('Failed to update status', 'Close', { duration: 3000 })
+    });
   }
 
   // Department Management
   showCreateDepartmentDialog() {
-    this.editingDept = { status: 'ACTIVE' };
+    this.editingDept = { status: 'active' };
     this.showDeptForm = true;
   }
 
   editDepartment(dept: Department) {
-    this.editingDept = { ...dept };
+    this.editingDept = { ...dept, headUserId: dept.headUserId || (dept as any).headUserId?._id };
     this.showDeptForm = true;
   }
 
@@ -545,22 +568,34 @@ export class AdminComponent implements OnInit {
   }
 
   saveDepartment() {
-    if (!this.editingDept.name) return;
-    if (this.editingDept._id) {
-      const idx = this.departments.findIndex(d => d._id === this.editingDept._id);
-      if (idx > -1) this.departments[idx] = this.editingDept as Department;
-      this.snackBar.open('Department updated', 'Close', { duration: 3000 });
-    } else {
-      this.editingDept._id = 'd' + Date.now();
-      this.departments = [...this.departments, this.editingDept as Department];
-      this.snackBar.open('Department created', 'Close', { duration: 3000 });
+    if (!this.editingDept.name) {
+      this.snackBar.open('Department name is required', 'Close', { duration: 3000 });
+      return;
     }
-    this.cancelDeptForm();
+    if (this.editingDept._id) {
+      this.http.put<any>(`/api/departments/${this.editingDept._id}`, this.editingDept).subscribe({
+        next: () => {
+          this.snackBar.open('Department updated successfully', 'Close', { duration: 3000 });
+          this.cancelDeptForm();
+          this.loadData();
+        },
+        error: (err) => this.snackBar.open(err.error?.message || 'Failed to update department', 'Close', { duration: 3000 })
+      });
+    } else {
+      this.http.post<any>('/api/departments', this.editingDept).subscribe({
+        next: () => {
+          this.snackBar.open('Department created successfully', 'Close', { duration: 3000 });
+          this.cancelDeptForm();
+          this.loadData();
+        },
+        error: (err) => this.snackBar.open(err.error?.message || 'Failed to create department', 'Close', { duration: 3000 })
+      });
+    }
   }
 
   // Rule Management
   showCreateRuleDialog() {
-    this.editingRule = { enabled: true, ruleType: 'BUDGET_WARNING' };
+    this.editingRule = { enabled: true, ruleType: 'OVERSPENDING', value: 90 };
     this.showRuleForm = true;
   }
 
@@ -575,21 +610,39 @@ export class AdminComponent implements OnInit {
   }
 
   saveRule() {
-    if (!this.editingRule.ruleType || this.editingRule.value === undefined) return;
-    if (this.editingRule._id) {
-      const idx = this.rules.findIndex(r => r._id === this.editingRule._id);
-      if (idx > -1) this.rules[idx] = this.editingRule as ThresholdRule;
-      this.snackBar.open('Rule updated', 'Close', { duration: 3000 });
-    } else {
-      this.editingRule._id = 'r' + Date.now();
-      this.rules = [...this.rules, this.editingRule as ThresholdRule];
-      this.snackBar.open('Rule created', 'Close', { duration: 3000 });
+    if (!this.editingRule.ruleType || this.editingRule.value === undefined) {
+      this.snackBar.open('Please fill rule type and value', 'Close', { duration: 3000 });
+      return;
     }
-    this.cancelRuleForm();
+    if (this.editingRule._id) {
+      this.http.put<any>(`/api/admin/rules/${this.editingRule._id}`, this.editingRule).subscribe({
+        next: () => {
+          this.snackBar.open('Rule updated successfully', 'Close', { duration: 3000 });
+          this.cancelRuleForm();
+          this.loadData();
+        },
+        error: (err) => this.snackBar.open(err.error?.message || 'Failed to update rule', 'Close', { duration: 3000 })
+      });
+    } else {
+      this.http.post<any>('/api/admin/rules', this.editingRule).subscribe({
+        next: () => {
+          this.snackBar.open('Rule created successfully', 'Close', { duration: 3000 });
+          this.cancelRuleForm();
+          this.loadData();
+        },
+        error: (err) => this.snackBar.open(err.error?.message || 'Failed to create rule', 'Close', { duration: 3000 })
+      });
+    }
   }
 
-  toggleRuleStatus(rule: ThresholdRule) {
-    rule.enabled = !rule.enabled;
-    this.snackBar.open(`Rule ${rule.enabled ? 'enabled' : 'disabled'}`, 'Close', { duration: 3000 });
+  toggleRuleStatus(rule: any) {
+    const updated = { ...rule, enabled: !rule.enabled };
+    this.http.put<any>(`/api/admin/rules/${rule._id}`, updated).subscribe({
+      next: () => {
+        rule.enabled = !rule.enabled;
+        this.snackBar.open(`Rule ${rule.enabled ? 'enabled' : 'disabled'}`, 'Close', { duration: 3000 });
+      },
+      error: () => this.snackBar.open('Failed to toggle rule', 'Close', { duration: 3000 })
+    });
   }
 }

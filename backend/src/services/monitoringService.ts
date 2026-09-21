@@ -198,25 +198,44 @@ export class MonitoringService {
     return alerts;
   }
 
-  static async getOverview(departmentId?: string): Promise<object> {
-    const query: any = { status: 'active' };
+  static async getOverview(departmentId?: string, financialYear?: string): Promise<object> {
+    const query: any = {};
     if (departmentId) query.departmentId = departmentId;
+    if (financialYear) query.financialYear = financialYear;
     
-    const budgets = await Budget.find(query);
+    const budgets = await Budget.find(query).populate('departmentId', 'name');
     const alertsQuery: any = { status: 'OPEN' };
     if (departmentId) alertsQuery.departmentId = departmentId;
 
     const alerts = await Alert.find(alertsQuery);
 
+    let totalAllocated = 0;
+    let totalSpent = 0;
     let overBudget = 0;
     let underUtilized = 0;
+    const deptMap: any = {};
 
     budgets.forEach((b: any) => {
+      totalAllocated += b.allocatedAmount;
+      totalSpent += b.totalSpent;
       const util = calculateUtilizationPercentage(b.totalSpent, b.allocatedAmount);
       const elapsed = calculateBudgetPeriodElapsed(b.startDate, b.endDate);
       if (b.totalSpent > b.allocatedAmount) overBudget++;
       if (elapsed > 70 && util < 40) underUtilized++;
+
+      const deptId = b.departmentId?._id?.toString() || 'unknown';
+      const deptName = b.departmentId?.name || 'Unknown';
+      if (!deptMap[deptId]) {
+        deptMap[deptId] = { departmentName: deptName, allocatedAmount: 0, spentAmount: 0 };
+      }
+      deptMap[deptId].allocatedAmount += b.allocatedAmount;
+      deptMap[deptId].spentAmount += b.totalSpent;
     });
+
+    const departmentStats = Object.values(deptMap).map((d: any) => ({
+      ...d,
+      utilization: calculateUtilizationPercentage(d.spentAmount, d.allocatedAmount)
+    }));
 
     const severityCounts = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
     alerts.forEach((a: any) => {
@@ -227,9 +246,14 @@ export class MonitoringService {
 
     return {
       totalBudgets: budgets.length,
+      totalAllocated,
+      totalSpent,
+      utilizationPercentage: calculateUtilizationPercentage(totalSpent, totalAllocated),
+      activeAlerts: alerts.length,
       overBudget,
       underUtilized,
-      alertsBySeverity: severityCounts
+      alertsBySeverity: severityCounts,
+      departmentStats
     };
   }
 
