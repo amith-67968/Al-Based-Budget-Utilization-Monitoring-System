@@ -1,13 +1,16 @@
 import { Routes } from '@angular/router';
 import { authGuard, roleGuard } from './guards/auth.guard';
+import { LandingComponent } from './public/landing/landing.component';
 
 export const routes: Routes = [
+  { path: '', component: LandingComponent, pathMatch: 'full' },
+  { path: 'home', component: LandingComponent },
   { path: 'login', loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent) },
   { path: 'unauthorized', loadComponent: () => import('./auth/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent) },
   {
     path: '',
     loadComponent: () => import('./core/layout/layout.component').then(m => m.LayoutComponent),
-    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent) },
       { path: 'budgets', loadComponent: () => import('./budgets/budget-list/budget-list.component').then(m => m.BudgetListComponent) },
@@ -25,9 +28,8 @@ export const routes: Routes = [
       { path: 'alerts', loadComponent: () => import('./alerts/alert-list/alert-list.component').then(m => m.AlertListComponent) },
       { path: 'reports', loadComponent: () => import('./reports/reports.component').then(m => m.ReportsComponent) },
       { path: 'admin', loadComponent: () => import('./admin/admin.component').then(m => m.AdminComponent), canActivate: [roleGuard], data: { roles: ['admin'] } },
-      { path: 'audit', loadComponent: () => import('./audit/audit.component').then(m => m.AuditComponent), canActivate: [roleGuard], data: { roles: ['admin'] } },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+      { path: 'audit', loadComponent: () => import('./audit/audit.component').then(m => m.AuditComponent), canActivate: [roleGuard], data: { roles: ['admin'] } }
     ]
   },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: '' }
 ];
