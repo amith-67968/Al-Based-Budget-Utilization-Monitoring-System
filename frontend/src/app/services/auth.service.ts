@@ -26,9 +26,13 @@ export class AuthService {
     );
   }
 
-  logout(): void {
+  clearSession(): void {
     localStorage.removeItem(this.tokenKey);
     this.currentUserSubject.next(null);
+  }
+
+  logout(): void {
+    this.clearSession();
     this.router.navigate(['/login']);
   }
 
@@ -59,17 +63,19 @@ export class AuthService {
     const token = this.getToken();
     if (token && !this.isTokenExpired(token)) {
       this.getProfile().pipe(
-        catchError(err => {
-          this.logout();
+        catchError(() => {
+          this.clearSession();
           return of(null);
         })
       ).subscribe(res => {
         if (res && res.success) {
           this.currentUserSubject.next(res.data);
+        } else {
+          this.clearSession();
         }
       });
     } else {
-      this.logout();
+      this.clearSession();
     }
   }
 
