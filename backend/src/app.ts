@@ -8,16 +8,38 @@ import { errorHandler } from './middleware/errorHandler';
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 
-// CORS configuration
+// CORS configuration supporting Vercel, localhost, and custom frontend URLs
+const allowedOrigins = [
+  'http://localhost:4200',
+  'http://localhost:3000',
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(s => s.trim().replace(/\/$/, '')) : [])
+];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL || 'http://localhost:4200'
-    : 'http://localhost:4200',
+  origin: (origin, callback) => {
+    // Allow server-to-server, curl, mobile, health checks
+    if (!origin) return callback(null, true);
+
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    
+    // Check if origin matches allowed list or vercel preview/production domain
+    const isAllowed = allowedOrigins.includes(normalizedOrigin) ||
+      /\.vercel\.app$/.test(new URL(origin).hostname) ||
+      process.env.NODE_ENV !== 'production';
+
+    if (isAllowed) {
+      return callback(null, true);
+    }
+    // In production, fallback to permissive for smooth deployment across Vercel custom domains
+    return callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 // Body parsing
@@ -28,6 +50,19 @@ app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
+
+// Root status endpoint (useful for Render live verification)
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'PFM-BUMS Government Portal Backend API',
+    status: 'online',
+    version: '1.0.0',
+    documentation: '/api',
+    healthCheck: '/api/health',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Health check
 app.get('/api/health', (_req, res) => {

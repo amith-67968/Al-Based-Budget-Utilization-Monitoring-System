@@ -12,7 +12,7 @@ import { Alert } from '../models/Alert';
 import { ThresholdRule } from '../models/ThresholdRule';
 import { AuditLog } from '../models/AuditLog';
 
-const seedDB = async () => {
+const seedDB = async (isStandalone = false) => {
   try {
     console.log('Connecting to database...');
     await connectDB();
@@ -435,11 +435,21 @@ const seedDB = async () => {
     console.log(`Dept Head (Agriculture): head.agriculture@gov.in`);
     console.log('=============================================\n');
 
-    process.exit(0);
+    if (isStandalone) {
+      process.exit(0);
+    }
   } catch (error) {
     console.error('Error seeding database:', error);
-    process.exit(1);
+    if (isStandalone) {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 
-seedDB();
+export { seedDB };
+
+// Run standalone if invoked directly via CLI (e.g. ts-node src/seed/seed.ts or node dist/seed/seed.js)
+if (require.main === module) {
+  seedDB(true);
+}

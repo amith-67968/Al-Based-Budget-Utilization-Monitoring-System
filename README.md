@@ -25,6 +25,7 @@ A comprehensive full-stack web application for monitoring government department 
 19. [Seed Data Overview](#seed-data-overview)
 20. [Environment Variables](#environment-variables)
 21. [Troubleshooting](#troubleshooting)
+22. [Deployment (Vercel & Render)](#deployment-vercel--render)
 
 ---
 
@@ -510,7 +511,18 @@ cd backend
 npm run seed   # Re-seed the database
 npm run dev    # Restart backend
 ```
-Then hard-refresh the browser (`Ctrl+Shift+R`) and try again with `admin@budgetmonitor.gov.in` / `Password123!`
+Then hard-refresh the browser (`Ctrl+Shift+R`) and try again with `admin1@gov.in` / `Password123!`
+
+---
+
+## Deployment (Vercel & Render)
+
+The project is fully prepared for cloud deployment:
+- **Frontend**: [Vercel](https://vercel.com/) with Angular 17 SPA rewrite and edge delivery (`vercel.json`).
+- **Backend**: [Render](https://render.com/) with 1-click Blueprint specification (`render.yaml`), health checks, auto-seeding (`AUTO_SEED=true`), and CORS support.
+- **Database**: [MongoDB Atlas](https://www.mongodb.com/atlas) Free Tier.
+
+👉 **For complete, step-by-step instructions, see the comprehensive [Deployment Guide (DEPLOYMENT.md)](./DEPLOYMENT.md).**
 
 ---
 
