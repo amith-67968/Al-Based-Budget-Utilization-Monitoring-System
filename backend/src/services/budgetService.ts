@@ -1,6 +1,14 @@
+import mongoose from 'mongoose';
 import { Budget } from '../models/Budget';
 import { Expenditure } from '../models/Expenditure';
 import { calculateRemainingBudget, calculateUtilizationPercentage } from '../utils/calculations';
+
+function sanitizeDepartmentId(deptId?: string): string | undefined {
+  if (!deptId || deptId === '[object Object]' || !mongoose.Types.ObjectId.isValid(deptId)) {
+    return undefined;
+  }
+  return deptId;
+}
 
 export class BudgetService {
   static async getAll(filters: {
@@ -16,7 +24,8 @@ export class BudgetService {
       const query: any = {};
       
       if (filters.financialYear) query.financialYear = filters.financialYear;
-      if (filters.departmentId) query.departmentId = filters.departmentId;
+      const cleanDeptId = sanitizeDepartmentId(filters.departmentId);
+      if (cleanDeptId) query.departmentId = cleanDeptId;
       if (filters.status) query.status = filters.status;
       
       if (filters.search) {
@@ -177,7 +186,8 @@ export class BudgetService {
   static async getDashboardStats(departmentId?: string): Promise<object> {
     try {
       const query: any = {};
-      if (departmentId) query.departmentId = departmentId;
+      const cleanDeptId = sanitizeDepartmentId(departmentId);
+      if (cleanDeptId) query.departmentId = cleanDeptId;
 
       const budgets = await Budget.find(query).populate('departmentId', 'name');
       
@@ -189,10 +199,10 @@ export class BudgetService {
         totalBudget += b.allocatedAmount;
         totalSpent += b.totalSpent;
         
-        const deptId = (b.departmentId as any)._id.toString();
+        const deptId = b.departmentId?._id?.toString() || b.departmentId?.toString() || 'unknown';
         if (!deptStats[deptId]) {
           deptStats[deptId] = {
-            name: (b.departmentId as any).name,
+            name: b.departmentId?.name || 'Unassigned',
             allocated: 0,
             spent: 0
           };

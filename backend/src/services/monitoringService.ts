@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Alert } from '../models/Alert';
 import { Budget } from '../models/Budget';
 import { Expenditure } from '../models/Expenditure';
@@ -200,12 +201,16 @@ export class MonitoringService {
 
   static async getOverview(departmentId?: string, financialYear?: string): Promise<object> {
     const query: any = {};
-    if (departmentId) query.departmentId = departmentId;
-    if (financialYear) query.financialYear = financialYear;
+    if (departmentId && departmentId !== '[object Object]' && departmentId !== 'undefined' && mongoose.Types.ObjectId.isValid(departmentId)) {
+      query.departmentId = departmentId;
+    }
+    if (financialYear && financialYear !== 'all') {
+      query.financialYear = financialYear;
+    }
     
     const budgets = await Budget.find(query).populate('departmentId', 'name');
     const alertsQuery: any = { status: 'OPEN' };
-    if (departmentId) alertsQuery.departmentId = departmentId;
+    if (query.departmentId) alertsQuery.departmentId = query.departmentId;
 
     const alerts = await Alert.find(alertsQuery);
 

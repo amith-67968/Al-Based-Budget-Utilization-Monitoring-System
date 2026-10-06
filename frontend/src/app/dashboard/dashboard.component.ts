@@ -315,8 +315,7 @@ export class DashboardComponent implements OnInit {
 
   loadData() {
     this.isLoading = true;
-    const currentUser = this.authService.getCurrentUser();
-    const deptId = currentUser?.departmentId;
+    const deptId = this.authService.getDepartmentId() || undefined;
 
     // Simulate concurrent data fetching, adapt as needed with RxJS forkJoin
     Promise.all([

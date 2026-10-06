@@ -1,9 +1,16 @@
+import mongoose from 'mongoose';
 import { Parser } from 'json2csv';
 import PDFDocument from 'pdfkit';
 import { Budget } from '../models/Budget';
 import { Expenditure } from '../models/Expenditure';
 import { Alert } from '../models/Alert';
 
+function sanitizeDepartmentId(deptId?: string): string | undefined {
+  if (!deptId || deptId === '[object Object]' || !mongoose.Types.ObjectId.isValid(deptId)) {
+    return undefined;
+  }
+  return deptId;
+}
 export class ReportService {
   static async getBudgetUtilizationReport(filters: {
     financialYear?: string;
@@ -14,7 +21,8 @@ export class ReportService {
     try {
       const query: any = {};
       if (filters.financialYear) query.financialYear = filters.financialYear;
-      if (filters.departmentId) query.departmentId = filters.departmentId;
+      const cleanDeptId = sanitizeDepartmentId(filters.departmentId);
+      if (cleanDeptId) query.departmentId = cleanDeptId;
       if (filters.startDate || filters.endDate) {
         query.createdAt = {};
         if (filters.startDate) query.createdAt.$gte = new Date(filters.startDate);
@@ -49,7 +57,8 @@ export class ReportService {
   }): Promise<any[]> {
     try {
       const query: any = {};
-      if (filters.departmentId) query.departmentId = filters.departmentId;
+      const cleanDeptId = sanitizeDepartmentId(filters.departmentId);
+      if (cleanDeptId) query.departmentId = cleanDeptId;
       if (filters.budgetId) query.budgetId = filters.budgetId;
       if (filters.category) query.expenseCategory = filters.category;
       
@@ -97,7 +106,8 @@ export class ReportService {
   }): Promise<any[]> {
     try {
       const query: any = {};
-      if (filters.departmentId) query.departmentId = filters.departmentId;
+      const cleanDeptId = sanitizeDepartmentId(filters.departmentId);
+      if (cleanDeptId) query.departmentId = cleanDeptId;
       if (filters.alertType) query.alertType = filters.alertType;
       if (filters.severity) query.severity = filters.severity;
       if (filters.status) query.status = filters.status;

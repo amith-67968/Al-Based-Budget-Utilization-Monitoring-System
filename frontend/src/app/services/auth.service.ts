@@ -59,6 +59,15 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  getDepartmentId(): string {
+    const user = this.getCurrentUser();
+    if (!user || !user.departmentId) return '';
+    if (typeof user.departmentId === 'object' && user.departmentId._id) {
+      return user.departmentId._id.toString();
+    }
+    return user.departmentId.toString();
+  }
+
   private loadUserFromToken(): void {
     const token = this.getToken();
     if (token && !this.isTokenExpired(token)) {

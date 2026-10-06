@@ -1,5 +1,12 @@
+import mongoose from 'mongoose';
 import { Alert } from '../models/Alert';
 
+function sanitizeDepartmentId(deptId?: string): string | undefined {
+  if (!deptId || deptId === '[object Object]' || !mongoose.Types.ObjectId.isValid(deptId)) {
+    return undefined;
+  }
+  return deptId;
+}
 export class AlertService {
   static async getAll(filters: {
     budgetId?: string;
@@ -14,7 +21,8 @@ export class AlertService {
     try {
       const query: any = {};
       if (filters.budgetId) query.budgetId = filters.budgetId;
-      if (filters.departmentId) query.departmentId = filters.departmentId;
+      const cleanDeptId = sanitizeDepartmentId(filters.departmentId);
+      if (cleanDeptId) query.departmentId = cleanDeptId;
       if (filters.alertType) query.alertType = filters.alertType;
       if (filters.severity) query.severity = filters.severity;
       if (filters.status) query.status = filters.status;
@@ -76,7 +84,8 @@ export class AlertService {
   static async getRecentAlerts(limit: number, departmentId?: string): Promise<any[]> {
     try {
       const query: any = { status: 'OPEN' };
-      if (departmentId) query.departmentId = departmentId;
+      const cleanDeptId = sanitizeDepartmentId(departmentId);
+      if (cleanDeptId) query.departmentId = cleanDeptId;
 
       return await Alert.find(query)
         .populate('budgetId', 'projectName')
@@ -91,7 +100,8 @@ export class AlertService {
   static async getAlertStats(departmentId?: string): Promise<object> {
     try {
       const query: any = {};
-      if (departmentId) query.departmentId = departmentId;
+      const cleanDeptId = sanitizeDepartmentId(departmentId);
+      if (cleanDeptId) query.departmentId = cleanDeptId;
 
       const alerts = await Alert.find(query);
 

@@ -227,7 +227,7 @@ export class ExpenditureListComponent implements OnInit {
 
   ngOnInit() {
     this.userRole = this.authService.getCurrentUser()?.role || '';
-    this.userDepartmentId = this.authService.getCurrentUser()?.departmentId || '';
+    this.userDepartmentId = this.authService.getDepartmentId();
 
     // If department head, lock department filter
     if (this.userRole === 'department_head') {

@@ -1,9 +1,16 @@
+import mongoose from 'mongoose';
 import { Expenditure } from '../models/Expenditure';
 import { Budget } from '../models/Budget';
 import { MonitoringService } from './monitoringService';
 import { AuditService } from './auditService';
 import { BudgetService } from './budgetService';
 
+function sanitizeDepartmentId(deptId?: string): string | undefined {
+  if (!deptId || deptId === '[object Object]' || !mongoose.Types.ObjectId.isValid(deptId)) {
+    return undefined;
+  }
+  return deptId;
+}
 export class ExpenditureService {
   static async getAll(filters: {
     budgetId?: string;
@@ -20,7 +27,8 @@ export class ExpenditureService {
       const query: any = {};
 
       if (filters.budgetId) query.budgetId = filters.budgetId;
-      if (filters.departmentId) query.departmentId = filters.departmentId;
+      const cleanDeptId = sanitizeDepartmentId(filters.departmentId);
+      if (cleanDeptId) query.departmentId = cleanDeptId;
       if (filters.expenseCategory) query.expenseCategory = filters.expenseCategory;
 
       if (filters.startDate || filters.endDate) {

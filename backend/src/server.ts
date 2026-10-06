@@ -13,20 +13,18 @@ const startServer = async () => {
     // Connect to MongoDB
     await connectDB();
     
-    // Check if auto-seed is enabled and database is empty
-    if (process.env.AUTO_SEED === 'true') {
-      try {
-        const userCount = await User.countDocuments();
-        if (userCount === 0) {
-          console.log('\n🌱 AUTO_SEED is enabled and database is empty. Seeding initial data...');
-          await seedDB(false);
-          console.log('✅ Initial database seed completed successfully.\n');
-        } else {
-          console.log(`\nℹ️  Database contains ${userCount} users. Skipping auto-seed.`);
-        }
-      } catch (seedErr) {
-        console.error('⚠️  Auto-seed encountered an error:', seedErr);
+    // Auto-seed if database is empty (0 users) or AUTO_SEED is set
+    try {
+      const userCount = await User.countDocuments();
+      if (userCount === 0 || process.env.AUTO_SEED === 'true') {
+        console.log(`\n🌱 Auto-seeding database (current user count: ${userCount})...`);
+        await seedDB(false);
+        console.log('✅ Initial database seed completed successfully.\n');
+      } else {
+        console.log(`\nℹ️  Database contains ${userCount} users. Auto-seed skipped.`);
       }
+    } catch (seedErr) {
+      console.error('⚠️  Auto-seed encountered an error:', seedErr);
     }
 
     // Start Express server

@@ -334,7 +334,7 @@ export class MonitoringComponent implements OnInit {
 
   ngOnInit() {
     this.userRole = this.authService.getCurrentUser()?.role || '';
-    this.userDepartmentId = this.authService.getCurrentUser()?.departmentId || '';
+    this.userDepartmentId = this.authService.getDepartmentId();
 
     if (this.userRole === 'department_head') {
       this.selectedDepartment = this.userDepartmentId;
