@@ -44,7 +44,7 @@ import { AuthService } from '../../services/auth.service';
     <mat-sidenav-container class="sidenav-container">
       <mat-sidenav
         #sidenav
-        mode="side"
+        [mode]="isMobile ? 'over' : 'side'"
         [opened]="sidenavOpened"
         class="sidenav">
         
@@ -575,6 +575,40 @@ import { AuthService } from '../../services/auth.service';
       color: #4ade80;
     }
 
+    @media (max-width: 1024px) {
+      .toolbar { padding: 0 14px !important; }
+      .portal-title { max-width: 48vw; }
+      .main-content { padding: 16px; }
+    }
+
+    @media (max-width: 767px) {
+      .gov-top-bar { padding: 5px 12px; }
+      .gov-top-left { gap: 5px; font-size: 9px; flex-wrap: wrap; }
+      .ministry-text, .gov-top-right { display: none; }
+      .sidenav-container { height: calc(100dvh - 31px); }
+      .sidenav { width: min(82vw, 300px); }
+      .toolbar { height: auto !important; min-height: 58px !important; padding: 8px 10px !important; gap: 4px; }
+      .menu-btn { margin-right: 4px; flex: 0 0 auto; }
+      .portal-main-heading { min-width: 0; }
+      .portal-title { max-width: none; font-size: 12px; line-height: 1.25; white-space: normal; }
+      .officer-profile-card { height: 38px; padding: 3px 7px 3px 4px; gap: 5px; flex: 0 0 auto; }
+      .officer-avatar-badge { width: 29px; height: 29px; }
+      .officer-fullname { max-width: 92px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+      .officer-role-tag, .dropdown-chevron { display: none; }
+      .main-content { height: calc(100dvh - 89px); padding: 12px; }
+      .gov-portal-footer { padding: 18px 14px; margin-top: 24px; }
+      .links-col { line-height: 1.8; }
+    }
+
+    @media (max-width: 420px) {
+      .emblem-text-en { font-size: 8px; }
+      .gov-top-left { gap: 4px; }
+      .toolbar { padding-inline: 7px !important; }
+      .portal-title { font-size: 10.5px; }
+      .officer-fullname { max-width: 70px; }
+      .main-content { padding: 9px; }
+    }
+
     @media (max-width: 900px) {
       .portal-tagline, .gov-top-right, .active-fy-banner { display: none; }
       .portal-title { font-size: 13px; }
@@ -584,6 +618,7 @@ import { AuthService } from '../../services/auth.service';
 export class LayoutComponent implements OnInit {
   user: any;
   sidenavOpened = true;
+  isMobile = window.innerWidth <= 767;
   currentTime: Date = new Date();
   
   navItems: { label: string, icon: string, route: string, roles: string[] }[] = [];
@@ -591,6 +626,8 @@ export class LayoutComponent implements OnInit {
   constructor(public authService: AuthService) {}
   
   ngOnInit() {
+    this.updateResponsiveLayout();
+    window.addEventListener('resize', this.updateResponsiveLayout);
     this.authService.currentUser$.subscribe(user => {
       this.user = user;
       this.buildNavItems();
@@ -600,6 +637,11 @@ export class LayoutComponent implements OnInit {
       this.currentTime = new Date();
     }, 1000);
   }
+
+  private updateResponsiveLayout = () => {
+    this.isMobile = window.innerWidth <= 767;
+    this.sidenavOpened = !this.isMobile;
+  };
 
   getFormattedRole(role: string): string {
     if (!role) return 'OFFICER';

@@ -146,3 +146,32 @@ html, body {
 
 .clickable { cursor: pointer; }
 .clickable:hover { background-color: var(--color-bg); }
+
+/* Shared responsive behavior for feature pages and Material components. */
+*, *::before, *::after { box-sizing: border-box; }
+img, canvas, svg { max-width: 100%; }
+.page-container { width: 100%; max-width: 1440px; margin-inline: auto; min-width: 0; }
+.table-container { max-width: 100%; -webkit-overflow-scrolling: touch; }
+.mat-mdc-card-content, .mat-mdc-card-header, .mat-mdc-card-actions { min-width: 0; }
+
+@media (max-width: 1024px) {
+  .page-container { padding: 18px; }
+  .mat-mdc-card { max-width: 100%; }
+}
+
+@media (max-width: 767px) {
+  .page-container { padding: 12px; }
+  .actions-row { gap: 10px; }
+  .actions-row > * { min-width: 0; max-width: 100%; }
+  .kpi-value { font-size: clamp(20px, 6vw, 28px); overflow-wrap: anywhere; }
+  .mat-mdc-form-field { max-width: 100%; }
+  .mat-mdc-table { min-width: 640px; }
+  .mat-mdc-dialog-container { max-width: calc(100vw - 24px) !important; }
+}
+
+@media (max-width: 420px) {
+  .page-container { padding: 9px; }
+  .actions-row { gap: 8px; }
+  .actions-row > .mat-mdc-form-field { width: 100%; }
+  .status-badge { padding: 3px 8px; font-size: 11px; }
+}
